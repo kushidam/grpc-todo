@@ -11,8 +11,8 @@ message TodoItem {
 
     enum Status {
         STATUS_UNKNOWN_UNSPECIFIED = 0;
-        STATUS_CLOSE = 1;
-        STATUS_OPEN = 2;
+        STATUS_COMPLETED = 1;
+        STATUS_NOSTARTED = 2;
     }
 }
 
