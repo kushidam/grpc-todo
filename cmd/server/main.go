@@ -56,9 +56,9 @@ func (s *TodoServer) DeleteTodo(
 }
 
 func main() {
-	Toder := &TodoServer{}
+	Todoer := &TodoServer{}
 	mux := http.NewServeMux()
-	path, handler := todov1connect.NewTodoServiceHandler(Toder)
+	path, handler := todov1connect.NewTodoServiceHandler(Todoer)
 	mux.Handle(path, handler)
 	http.ListenAndServe(
 		"localhost:8080",
