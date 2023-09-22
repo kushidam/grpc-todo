@@ -26,7 +26,7 @@ func (s *TodoServer) CreateTodo(
 	item := &todov1.TodoItem{
 		Id:     id,
 		Title:  req.Msg.Title,
-		Status: todov1.TodoItem_STATUS_OPEN,
+		Status: todov1.TodoItem_STATUS_NOSTARTED,
 	}
 	s.items.Store(id, item)
 	res := connect.NewResponse(&todov1.CreateTodoResponse{
