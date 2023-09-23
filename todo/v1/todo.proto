@@ -2,12 +2,13 @@ syntax = "proto3";
 
 package todo.v1;
 
-option go_package = "github.com/kushidam/grpc-todo/v1;todov1";
+option go_package = "github.com/kushidam/grpc-todo/gen/todo/v1;todov1";
 
 message TodoItem {
     string id = 1;
     string title = 2;
     Status status = 3;
+
 
     enum Status {
         STATUS_UNKNOWN_UNSPECIFIED = 0;
