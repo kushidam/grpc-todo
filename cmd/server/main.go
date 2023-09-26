@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"sync"
 
@@ -39,8 +40,18 @@ func (s *TodoServer) UpdateTodo(
 	ctx context.Context,
 	req *connect.Request[todov1.UpdateTodoRequest],
 ) (*connect.Response[todov1.UpdateTodoResponse], error) {
+	item, _ := s.items.Load(req.Msg.Id)
+	if item == nil {
+		return nil, errors.New("Todo item not found") //TODO
+	}
+
+	todoItem, ok := item.(*todov1.TodoItem)
+	if !ok {
+		return nil, errors.New("Failed to assert TodoItem type") //TODO
+	}
+
 	res := connect.NewResponse(&todov1.UpdateTodoResponse{
-		
+		Item: todoItem, 
 	})
 	return res, nil
 }
