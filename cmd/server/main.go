@@ -40,18 +40,31 @@ func (s *TodoServer) UpdateTodo(
 	ctx context.Context,
 	req *connect.Request[todov1.UpdateTodoRequest],
 ) (*connect.Response[todov1.UpdateTodoResponse], error) {
-	item, _ := s.items.Load(req.Msg.Id)
-	if item == nil {
-		return nil, errors.New("Todo item not found") //TODO
+	reqKeyId := req.Msg.Id;
+	todoItemBefore, _ := s.items.Load(reqKeyId)
+	if todoItemBefore == nil {
+		return nil, errors.New("Todo item not found") //TODO非機能要件
 	}
 
-	todoItem, ok := item.(*todov1.TodoItem)
+	todoItemAfter, ok := todoItemBefore.(*todov1.TodoItem)
 	if !ok {
-		return nil, errors.New("Failed to assert TodoItem type") //TODO
+		return nil, errors.New("Failed to assert TodoItem type") //TODO非機能要件
+	}
+
+	if todoItemAfter.Status == todov1.TodoItem_STATUS_NOSTARTED {
+		todoItemAfter.Status = todov1.TodoItem_STATUS_COMPLETED
+	} else if todoItemAfter.Status == todov1.TodoItem_STATUS_COMPLETED {
+		todoItemAfter.Status = todov1.TodoItem_STATUS_NOSTARTED
+	} else {
+		todoItemAfter.Status = todov1.TodoItem_STATUS_UNKNOWN_UNSPECIFIED
+	}
+
+	if !s.items.CompareAndSwap(reqKeyId, todoItemBefore, todoItemAfter) {
+		return nil, errors.New("Failed to CompareAndSwap") //TODO非機能要件
 	}
 
 	res := connect.NewResponse(&todov1.UpdateTodoResponse{
-		Item: todoItem, 
+		Item: todoItemAfter, 
 	})
 	return res, nil
 }
