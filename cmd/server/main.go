@@ -73,8 +73,15 @@ func (s *TodoServer) DeleteTodo(
 	ctx context.Context,
 	req *connect.Request[todov1.DeleteTodoRequest],
 ) (*connect.Response[todov1.DeleteTodoResponse], error) {
+
+	reqKeyId := req.Msg.Id;
+	_, ok := s.items.LoadAndDelete (reqKeyId)
+	if !ok {
+		return nil, errors.New("Todo item not found") //TODO非機能要件
+	}
+
 	res := connect.NewResponse(&todov1.DeleteTodoResponse{
-		
+		Id: reqKeyId,
 	})
 	return res, nil
 }
