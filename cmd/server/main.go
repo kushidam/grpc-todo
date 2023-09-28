@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"connectrpc.com/connect"
+	"golang.org/x/exp/slog"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 
@@ -20,70 +21,80 @@ type TodoServer struct {
 }
 
 func (s *TodoServer) CreateTodo(
-	ctx context.Context,
-	req *connect.Request[todov1.CreateTodoRequest],
+    ctx context.Context,
+    req *connect.Request[todov1.CreateTodoRequest],
 ) (*connect.Response[todov1.CreateTodoResponse], error) {
-	id := uuid.New().String()
-	item := &todov1.TodoItem{
-		Id:     id,
-		Title:  req.Msg.Title,
-		Status: todov1.TodoItem_STATUS_NOSTARTED,
-	}
-	s.items.Store(id, item)
-	res := connect.NewResponse(&todov1.CreateTodoResponse{
-		Item: item,
-	})
-	return res, nil
+	slog.Info("CreateTodo", req )
+    id := uuid.New().String()
+    item := &todov1.TodoItem{
+        Id:     id,
+        Title:  req.Msg.Title,
+        Status: todov1.TodoItem_STATUS_NOSTARTED,
+    }
+    s.items.Store(id, item)
+    res := connect.NewResponse(&todov1.CreateTodoResponse{
+        Item: item,
+    })
+    return res, nil
 }
 
 func (s *TodoServer) UpdateTodo(
-	ctx context.Context,
-	req *connect.Request[todov1.UpdateTodoRequest],
+    ctx context.Context,
+    req *connect.Request[todov1.UpdateTodoRequest],
 ) (*connect.Response[todov1.UpdateTodoResponse], error) {
-	reqKeyId := req.Msg.Id;
-	todoItemBefore, _ := s.items.Load(reqKeyId)
-	if todoItemBefore == nil {
-		return nil, errors.New("Todo item not found") //TODO非機能要件
-	}
+	slog.Info("UpdateTodo", req )
+    reqKeyId := req.Msg.Id
+    todoItemBefore, _ := s.items.Load(reqKeyId)
+    if todoItemBefore == nil {
+        errMsg := "Todo item not found"
+        slog.Warn(errMsg, "request_id", reqKeyId)
+        return nil, errors.New(errMsg)
+    }
 
-	todoItemAfter, ok := todoItemBefore.(*todov1.TodoItem)
-	if !ok {
-		return nil, errors.New("Failed to assert TodoItem type") //TODO非機能要件
-	}
+    todoItemAfter, ok := todoItemBefore.(*todov1.TodoItem)
+    if !ok {
+		errMsg := "Failed to assert TodoItem type"
+        slog.Warn(errMsg, "request_id", reqKeyId)
+        return nil, errors.New(errMsg)
+    }
 
-	if todoItemAfter.Status == todov1.TodoItem_STATUS_NOSTARTED {
-		todoItemAfter.Status = todov1.TodoItem_STATUS_COMPLETED
-	} else if todoItemAfter.Status == todov1.TodoItem_STATUS_COMPLETED {
-		todoItemAfter.Status = todov1.TodoItem_STATUS_NOSTARTED
-	} else {
-		todoItemAfter.Status = todov1.TodoItem_STATUS_UNKNOWN_UNSPECIFIED
-	}
+    if todoItemAfter.Status == todov1.TodoItem_STATUS_NOSTARTED {
+        todoItemAfter.Status = todov1.TodoItem_STATUS_COMPLETED
+    } else if todoItemAfter.Status == todov1.TodoItem_STATUS_COMPLETED {
+        todoItemAfter.Status = todov1.TodoItem_STATUS_NOSTARTED
+    } else {
+        todoItemAfter.Status = todov1.TodoItem_STATUS_UNKNOWN_UNSPECIFIED
+    }
 
-	if !s.items.CompareAndSwap(reqKeyId, todoItemBefore, todoItemAfter) {
-		return nil, errors.New("Failed to CompareAndSwap") //TODO非機能要件
-	}
+    if !s.items.CompareAndSwap(reqKeyId, todoItemBefore, todoItemAfter) {
+		errMsg := "Failed to CompareAndSwap"
+        slog.Warn(errMsg, "todoBefore", todoItemBefore, "todoAfter", todoItemAfter)
+        return nil, errors.New(errMsg)
+    }
 
-	res := connect.NewResponse(&todov1.UpdateTodoResponse{
-		Item: todoItemAfter, 
-	})
-	return res, nil
+    res := connect.NewResponse(&todov1.UpdateTodoResponse{
+        Item: todoItemAfter,
+    })
+    return res, nil
 }
 
 func (s *TodoServer) DeleteTodo(
-	ctx context.Context,
-	req *connect.Request[todov1.DeleteTodoRequest],
+    ctx context.Context,
+    req *connect.Request[todov1.DeleteTodoRequest],
 ) (*connect.Response[todov1.DeleteTodoResponse], error) {
+	slog.Info("DeleteTodo", req )
+    reqKeyId := req.Msg.Id
+    _, ok := s.items.LoadAndDelete(reqKeyId)
+    if !ok {
+		errMsg := "Todo item not found"
+        slog.Warn(errMsg, "request_id", reqKeyId)
+        return nil, errors.New(errMsg)
+    }
 
-	reqKeyId := req.Msg.Id;
-	_, ok := s.items.LoadAndDelete (reqKeyId)
-	if !ok {
-		return nil, errors.New("Todo item not found") //TODO非機能要件
-	}
-
-	res := connect.NewResponse(&todov1.DeleteTodoResponse{
-		Id: reqKeyId,
-	})
-	return res, nil
+    res := connect.NewResponse(&todov1.DeleteTodoResponse{
+        Id: reqKeyId,
+    })
+    return res, nil
 }
 
 func main() {
