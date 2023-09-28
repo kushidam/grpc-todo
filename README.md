@@ -20,6 +20,10 @@ gRPC互換のHTTP APIを構築するためのフレームワーク
 * evans
 gRPCをコマンドラインから確認できるツール
 [github→link](https://github.com/ktr0731/evans)
+```bash
+cd grpc-todo
+evans --proto proto/todo/v1/todo.proto repl
+```
 
 * senarigo
 シナリオをテストを行うためのライブラリ
