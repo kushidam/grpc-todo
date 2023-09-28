@@ -92,7 +92,7 @@ func main() {
 	path, handler := todov1connect.NewTodoServiceHandler(Todoer)
 	mux.Handle(path, handler)
 	http.ListenAndServe(
-		"localhost:8080",
+		"localhost:50051",
 		// Use h2c so we can serve HTTP/2 without TLS.
 		h2c.NewHandler(mux, &http2.Server{}),
 	)
