@@ -21,21 +21,54 @@ func TestDeleteTodo(t *testing.T) {
 	Todoer.items.Store(testUuid, testItem)
 
 
-	reqItem := &todov1.DeleteTodoRequest{
-		Id:     testUuid,
+	tests := []struct {
+		name           string
+		request        *connect.Request[todov1.DeleteTodoRequest]
+		expectResId	   string
+		expectError    bool
+	}{
+		{
+			name:           "Delete completed successfully",
+			request: &connect.Request[todov1.DeleteTodoRequest]{
+				Msg: &todov1.DeleteTodoRequest{
+					Id: testUuid,
+				},
+			},
+			expectResId:    testUuid,
+			expectError:    false,
+		},
+		{
+			name:           "Todo item not found",
+			request: &connect.Request[todov1.DeleteTodoRequest]{
+				Msg: &todov1.DeleteTodoRequest{
+					Id: "1234567",
+				},
+			},
+			expectError:    true,
+		},
+		// シナリオのテストケースをここに追加
 	}
 	
-	reqTodo := &connect.Request[todov1.DeleteTodoRequest]{
-		Msg: reqItem,
-	}
+	// テストケースをループで実行
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 
-	expected := testUuid
-	actualResult, err := Todoer.DeleteTodo(context.TODO(), reqTodo)
+			actualResult, err := Todoer.DeleteTodo(context.TODO(), test.request)
 
-	if err != nil {
-		t.Fatalf("DeleteTodo failed with error: %v", err)
-	}
-	if actualResult.Msg.Id != expected {
-		t.Errorf("actualResult [%v] is not equal to expected [%v]", actualResult.Msg.Id, expected)
+			// エラーが期待通りの場合
+			if test.expectError && err == nil {
+				t.Errorf("Expected an error, but got nil")
+			}
+
+			// エラーが期待通りでない場合
+			if !test.expectError && err != nil {
+				t.Errorf("Expected no error, DeleteTodo failed with error: %v", err)
+			}
+
+			// ステータスが期待通りでない場合
+			if actualResult != nil && actualResult.Msg.Id != test.expectResId {
+				t.Errorf("actualResult [%v] is not equal to expected [%v]", actualResult.Msg.Id, test.expectResId)
+			}
+		})
 	}
 }
