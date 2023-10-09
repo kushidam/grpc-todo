@@ -27,37 +27,9 @@ func TestUpdateTodo(t *testing.T) {
 		expectedStatus todov1.TodoItem_Status
 		expectError    bool
 	}{
-		{
-			name:           "Update to COMPLETED",
-			request: &connect.Request[todov1.UpdateTodoRequest]{
-				Msg: &todov1.UpdateTodoRequest{
-					Id: testUuid,
-				},
-			},
-			requestStatus:  todov1.TodoItem_STATUS_COMPLETED,
-			expectedStatus: todov1.TodoItem_STATUS_COMPLETED,
-			expectError:    false,
-		},
-		{
-			name:           "Update to NOSTARTED",
-			request: &connect.Request[todov1.UpdateTodoRequest]{
-				Msg: &todov1.UpdateTodoRequest{
-					Id: testUuid,
-				},
-			},
-			requestStatus:  todov1.TodoItem_STATUS_NOSTARTED,
-			expectedStatus: todov1.TodoItem_STATUS_NOSTARTED,
-			expectError:    false,
-		},
-		{
-			name:           "Todo item not found",
-			request: &connect.Request[todov1.UpdateTodoRequest]{
-				Msg: &todov1.UpdateTodoRequest{
-					Id: "1234567",
-				},
-			},
-			expectError:    true,
-		},
+		{"Update to COMPLETED", &connect.Request[todov1.UpdateTodoRequest]{Msg: &todov1.UpdateTodoRequest{Id: testUuid,},}, todov1.TodoItem_STATUS_COMPLETED, todov1.TodoItem_STATUS_COMPLETED, false,},
+		{"Update to NOSTARTED", &connect.Request[todov1.UpdateTodoRequest]{Msg: &todov1.UpdateTodoRequest{Id: testUuid,},}, todov1.TodoItem_STATUS_NOSTARTED, todov1.TodoItem_STATUS_NOSTARTED, false,},
+		{"Todo item not found", &connect.Request[todov1.UpdateTodoRequest]{Msg: &todov1.UpdateTodoRequest{Id: "123456",},}, todov1.TodoItem_STATUS_COMPLETED, todov1.TodoItem_STATUS_COMPLETED, true,},
 		// シナリオのテストケースをここに追加
 	}
 

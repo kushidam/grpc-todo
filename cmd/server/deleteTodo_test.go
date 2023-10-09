@@ -27,25 +27,8 @@ func TestDeleteTodo(t *testing.T) {
 		expectResId	   string
 		expectError    bool
 	}{
-		{
-			name:           "Delete completed successfully",
-			request: &connect.Request[todov1.DeleteTodoRequest]{
-				Msg: &todov1.DeleteTodoRequest{
-					Id: testUuid,
-				},
-			},
-			expectResId:    testUuid,
-			expectError:    false,
-		},
-		{
-			name:           "Todo item not found",
-			request: &connect.Request[todov1.DeleteTodoRequest]{
-				Msg: &todov1.DeleteTodoRequest{
-					Id: "1234567",
-				},
-			},
-			expectError:    true,
-		},
+		{"Delete completed successfully", &connect.Request[todov1.DeleteTodoRequest]{ Msg: &todov1.DeleteTodoRequest{ Id: testUuid, }, }, testUuid, false, },
+		{"Todo item not found",           &connect.Request[todov1.DeleteTodoRequest]{ Msg: &todov1.DeleteTodoRequest{ Id: "123456", }, },"NoData",  true, },
 		// シナリオのテストケースをここに追加
 	}
 	

@@ -15,24 +15,8 @@ func TestCreateTodo(t *testing.T) {
 		request        *connect.Request[todov1.CreateTodoRequest]
 		expectedTitle  string
 	}{
-		{
-			name: "Create Todo with valid input",
-			request: &connect.Request[todov1.CreateTodoRequest]{
-				Msg: &todov1.CreateTodoRequest{
-					Title: "test1 title",
-				},
-			},
-			expectedTitle: "test1 title",
-		},
-		{
-			name: "Create Todo with empty string",
-			request: &connect.Request[todov1.CreateTodoRequest]{
-				Msg: &todov1.CreateTodoRequest{
-					Title: "",
-				},
-			},
-			expectedTitle: "",
-		},
+		{ "Create Todo with valid input",  &connect.Request[todov1.CreateTodoRequest]{Msg: &todov1.CreateTodoRequest{Title: "test1 title",},},"test1 title",},
+		{ "Create Todo with empty string", &connect.Request[todov1.CreateTodoRequest]{Msg: &todov1.CreateTodoRequest{Title: "",           },},"",           },
 		// シナリオのテストケースをここに追加
 	}
 
